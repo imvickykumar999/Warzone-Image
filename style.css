@@ -1,0 +1,863 @@
+/* Reset & Base Setup */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Ensure hidden elements are ALWAYS completely hidden */
+[hidden],
+.hidden,
+#connect-screen[hidden],
+#connect-screen.hidden,
+#game-screen[hidden],
+#game-screen.hidden,
+#death-screen[hidden],
+#death-screen.hidden,
+#reload-text[hidden],
+#reload-text.hidden,
+#touch-controls[hidden],
+#touch-controls.hidden,
+#portrait-warning[hidden],
+#portrait-warning.hidden {
+  display: none !important;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  height: 100dvh;
+  overflow: hidden;
+  background-color: #000000;
+  font-family: 'Helvetica', 'Arial', sans-serif;
+  color: #ffffff;
+  overscroll-behavior: none;
+  touch-action: none;
+}
+
+/* ==========================================================================
+   SCREEN 1: Launcher / Connect Window (Exact Replica of Tkinter get_user_input)
+   ========================================================================== */
+#connect-screen {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: url('assets/background.jpg') no-repeat center center fixed;
+  background-size: cover;
+  z-index: 100;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: max(10px, env(safe-area-inset-top)) max(10px, env(safe-area-inset-right)) max(10px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left));
+}
+
+#launcher-frame {
+  background-color: #010d25;
+  border: 2px solid #002157;
+  border-radius: 6px;
+  box-shadow: 0 15px 50px rgba(0, 0, 0, 0.88);
+  width: min(520px, 92vw);
+  max-height: 94vh;
+  max-height: 94dvh;
+  overflow-y: auto;
+  padding: 34px 44px 38px;
+  text-align: center;
+}
+
+.launcher-label {
+  font-size: 26px;
+  font-weight: bold;
+  color: lightblue;
+  margin: 0 0 10px 0;
+  letter-spacing: 0.3px;
+}
+
+.input-wrap {
+  position: relative;
+  width: 100%;
+}
+
+.input-wrap input {
+  width: 100%;
+  font-family: 'Arial', sans-serif;
+  font-size: 19px;
+  text-align: center;
+  padding: 7px 12px;
+  border: 1px solid #7a9cb9;
+  border-radius: 4px;
+  background-color: #ffffff;
+  color: #000000;
+  outline: none;
+  font-weight: 500;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.input-wrap input:focus {
+  border-color: #00e5ff;
+  box-shadow: 0 0 8px rgba(0, 229, 255, 0.65);
+}
+
+#color-indicator {
+  font-family: 'Arial', sans-serif;
+  font-size: 13px;
+  font-weight: bold;
+  color: lightblue;
+  margin-top: 6px;
+  min-height: 18px;
+  transition: color 0.15s;
+}
+
+#ts-hint {
+  font-family: 'Arial', sans-serif;
+  font-size: 12px;
+  font-weight: bold;
+  color: #00e5ff;
+  margin-top: 6px;
+}
+
+#bridge-options-toggle {
+  margin-top: 14px;
+  text-align: left;
+  font-size: 12px;
+  color: #8da4be;
+  cursor: pointer;
+}
+
+#bridge-options-toggle summary {
+  outline: none;
+}
+
+#bridge-options-toggle input {
+  background: #03173d;
+  color: #e0f2fe;
+  border: 1px solid #335987;
+  border-radius: 3px;
+  text-align: left;
+}
+
+#connect-error {
+  color: #ff5252;
+  font-size: 13px;
+  font-weight: bold;
+  min-height: 20px;
+  margin-top: 12px;
+}
+
+.button-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 24px;
+}
+
+#btn-play {
+  background-color: green;
+  color: white;
+  font-family: 'Arial', sans-serif;
+  font-size: 20px;
+  font-weight: bold;
+  padding: 8px 38px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  box-shadow: 0 3px 8px rgba(0, 128, 0, 0.5);
+  transition: background-color 0.15s, transform 0.08s;
+}
+
+#btn-play:hover {
+  background-color: #009900;
+}
+
+#btn-play:active {
+  transform: scale(0.97);
+}
+
+#btn-close {
+  background-color: red;
+  color: white;
+  font-family: 'Arial', sans-serif;
+  font-size: 20px;
+  font-weight: bold;
+  padding: 8px 38px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  box-shadow: 0 3px 8px rgba(255, 0, 0, 0.4);
+  transition: background-color 0.15s, transform 0.08s;
+}
+
+#btn-close:hover {
+  background-color: #cc0000;
+}
+
+#btn-close:active {
+  transform: scale(0.97);
+}
+
+/* ==========================================================================
+   SCREEN 2: In-Game 3D Viewport & HUD (Exact Ursina Match)
+   ========================================================================== */
+#game-screen {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background-color: #000000;
+}
+
+#game-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  cursor: crosshair;
+}
+
+/* Center Crosshair (Ursina color rgba(255, 0, 0, 122)) */
+#crosshair {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 7px;
+  height: 7px;
+  background-color: rgba(255, 0, 0, 0.52);
+  pointer-events: none;
+  z-index: 10;
+  transition: width 0.15s ease, height 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+#crosshair.zoomed {
+  width: 9px;
+  height: 9px;
+  background-color: rgba(255, 30, 30, 0.95);
+  box-shadow: 0 0 8px rgba(255, 0, 0, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+}
+
+/* In-Game Top Center HUD */
+#hud-top {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  pointer-events: none;
+  z-index: 10;
+  width: min(520px, 70vw);
+}
+
+#healthbar-container {
+  width: 100%;
+  height: 22px;
+  background-color: rgb(255, 0, 0);
+  border: 1px solid rgba(0, 0, 0, 0.8);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+  position: relative;
+  overflow: hidden;
+}
+
+#healthbar-fill {
+  height: 100%;
+  width: 100%;
+  background-color: rgb(0, 255, 0);
+  transition: width 0.1s linear;
+}
+
+#health-text {
+  color: #ffffff;
+  font-family: 'Helvetica', 'Arial', sans-serif;
+  font-size: 19px;
+  font-weight: bold;
+  margin-top: 6px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.95);
+}
+
+#ammo-text {
+  color: #ffffff;
+  font-family: 'Helvetica', 'Arial', sans-serif;
+  font-size: 19px;
+  font-weight: bold;
+  margin-top: 5px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.95);
+}
+
+#reload-text {
+  color: #ffff00;
+  font-family: 'Helvetica', 'Arial', sans-serif;
+  font-size: 17px;
+  font-weight: bold;
+  margin-top: 4px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.95);
+}
+
+#hud-controls-hint {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: 'Helvetica', 'Arial', sans-serif;
+  font-size: 12px;
+  font-weight: bold;
+  color: rgba(255, 255, 255, 0.72);
+  text-shadow: 0 1px 5px #000000;
+  pointer-events: none;
+  z-index: 10;
+  white-space: nowrap;
+}
+
+#top-left-controls {
+  position: absolute;
+  top: 14px;
+  left: 18px;
+  display: flex;
+  gap: 8px;
+  z-index: 25;
+}
+
+#top-bar-controls {
+  position: absolute;
+  top: 14px;
+  right: 18px;
+  display: flex;
+  gap: 8px;
+  z-index: 25;
+}
+
+#top-left-controls button,
+#top-bar-controls button {
+  background: rgba(1, 13, 37, 0.78);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 4px;
+  padding: 6px 12px;
+  font-family: 'Helvetica', 'Arial', sans-serif;
+  font-size: 13px;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+  transition: background 0.15s, border-color 0.15s;
+  white-space: nowrap;
+}
+
+#top-left-controls button:hover,
+#top-bar-controls button:hover {
+  background: rgba(0, 229, 255, 0.28);
+  border-color: #00e5ff;
+}
+
+#top-left-controls button.active-mode,
+#top-bar-controls button.active-mode {
+  background: rgba(0, 229, 255, 0.32);
+  border-color: #00e5ff;
+  color: #00e5ff;
+  box-shadow: 0 0 10px rgba(0, 229, 255, 0.45);
+}
+
+/* ==========================================================================
+   SCREEN 3: Death Screen (Exact Ursina Match)
+   ========================================================================== */
+#death-screen {
+  position: absolute;
+  inset: 0;
+  background: url('assets/background.jpg') no-repeat center center;
+  background-size: cover;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 30;
+}
+
+#death-content {
+  text-align: center;
+  padding: 20px;
+}
+
+#death-title {
+  font-family: 'Helvetica', 'Arial', sans-serif;
+  font-size: clamp(52px, 8.5vw, 100px);
+  font-weight: 900;
+  color: #ff0000;
+  margin: 0 0 14px 0;
+  text-shadow: 0 4px 18px rgba(0, 0, 0, 0.95);
+  letter-spacing: 2px;
+}
+
+#death-subtitle {
+  font-family: 'Helvetica', 'Arial', sans-serif;
+  font-size: clamp(16px, 2.2vw, 24px);
+  font-weight: bold;
+  color: #ffffff;
+  margin: 0 0 28px 0;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.95);
+}
+
+#respawn-button {
+  background-color: #00bcd4;
+  color: #ffffff;
+  font-family: 'Helvetica', 'Arial', sans-serif;
+  font-size: 22px;
+  font-weight: bold;
+  padding: 12px 48px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(0, 188, 212, 0.5);
+  transition: background-color 0.15s, transform 0.08s;
+}
+
+#respawn-button:hover {
+  background-color: #00e5ff;
+  transform: scale(1.03);
+}
+
+#respawn-button:active {
+  transform: scale(0.97);
+}
+
+#timer-text {
+  font-family: 'Helvetica', 'Arial', sans-serif;
+  font-size: 18px;
+  color: #d0d0d0;
+  margin-top: 16px;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.95);
+}
+
+/* ==========================================================================
+   PORTRAIT WARNING (Encourage Landscape on Mobile)
+   ========================================================================== */
+.portrait-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(1, 13, 37, 0.96);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  z-index: 999999;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  text-align: center;
+}
+
+/* Show only on touch/mobile screens when in portrait */
+@media screen and (orientation: portrait) and (max-width: 900px) {
+  .portrait-overlay:not([hidden]) {
+    display: flex !important;
+  }
+}
+
+.rotate-phone-anim {
+  position: relative;
+  width: 90px;
+  height: 90px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 24px;
+}
+
+.phone-frame {
+  width: 44px;
+  height: 72px;
+  border: 3px solid #00e5ff;
+  border-radius: 9px;
+  box-shadow: 0 0 20px rgba(0, 229, 255, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: rotatePhone 2.2s ease-in-out infinite;
+  transform-origin: center center;
+}
+
+.phone-screen-inner {
+  width: 32px;
+  height: 54px;
+  background: rgba(0, 229, 255, 0.15);
+  border-radius: 4px;
+}
+
+.rotate-arrow {
+  position: absolute;
+  font-size: 26px;
+  color: #00e5ff;
+  animation: rotateArrow 2.2s linear infinite;
+}
+
+@keyframes rotatePhone {
+  0%, 15% {
+    transform: rotate(0deg);
+  }
+  50%, 80% {
+    transform: rotate(90deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
+@keyframes rotateArrow {
+  0% { transform: rotate(0deg); opacity: 0.3; }
+  50% { transform: rotate(180deg); opacity: 0.9; }
+  100% { transform: rotate(360deg); opacity: 0.3; }
+}
+
+.rotate-title {
+  font-size: 24px;
+  color: #00e5ff;
+  margin-bottom: 12px;
+  font-weight: 800;
+  text-shadow: 0 0 10px rgba(0, 229, 255, 0.5);
+}
+
+.rotate-desc {
+  font-size: 15px;
+  color: #c9d8e8;
+  max-width: 300px;
+  line-height: 1.5;
+}
+
+/* ==========================================================================
+   MOBILE TOUCH CONTROLS (Virtual Joystick, Look Zone, Action Buttons)
+   ========================================================================== */
+#touch-controls {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 20;
+  touch-action: none;
+  -webkit-touch-callout: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Touch & On-Screen Controls Display Rules */
+#touch-controls[hidden],
+#touch-controls.hidden,
+body.controls-mouse-keyboard #touch-controls,
+body.pointer-locked #touch-controls {
+  display: none !important;
+}
+
+body.controls-on-screen #touch-controls:not([hidden]) {
+  display: block !important;
+}
+
+/* Joystick Area (Left 46vw) */
+.joystick-zone {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 46vw;
+  height: 65vh;
+  height: 65dvh;
+  pointer-events: auto;
+  touch-action: none;
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-start;
+  padding-left: max(32px, env(safe-area-inset-left));
+  padding-bottom: max(26px, env(safe-area-inset-bottom));
+}
+
+#joystick-base {
+  position: relative;
+  width: 124px;
+  height: 124px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(1, 13, 37, 0.72) 0%, rgba(0, 33, 87, 0.45) 100%);
+  border: 2px solid rgba(0, 229, 255, 0.45);
+  box-shadow: 0 0 16px rgba(0, 229, 255, 0.25), inset 0 0 10px rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: auto;
+  touch-action: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+#joystick-base.active {
+  border-color: rgba(0, 229, 255, 0.85);
+  box-shadow: 0 0 24px rgba(0, 229, 255, 0.5), inset 0 0 15px rgba(0, 229, 255, 0.2);
+}
+
+.joystick-ring {
+  position: absolute;
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  border: 1.5px dashed rgba(0, 229, 255, 0.35);
+  pointer-events: none;
+}
+
+#joystick-knob {
+  position: absolute;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #00e5ff 0%, #0077b6 80%, #003366 100%);
+  border: 2px solid #ffffff;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.8), 0 0 14px rgba(0, 229, 255, 0.75);
+  pointer-events: none;
+  transform: translate(0px, 0px);
+  will-change: transform;
+}
+
+/* Look Area (Right 54vw) */
+.touch-look-zone {
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 54vw;
+  height: 100%;
+  pointer-events: auto;
+  touch-action: none;
+  z-index: 1;
+  cursor: crosshair;
+}
+
+/* Action Buttons Cluster (Bottom Right) */
+.touch-action-cluster {
+  position: absolute;
+  right: max(16px, env(safe-area-inset-right));
+  bottom: max(16px, env(safe-area-inset-bottom));
+  pointer-events: none;
+  z-index: 2;
+  width: 216px;
+  height: 200px;
+}
+
+.touch-btn {
+  position: absolute;
+  pointer-events: auto;
+  touch-action: none;
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-family: 'Helvetica', 'Arial', sans-serif;
+  font-weight: bold;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
+  cursor: pointer;
+  outline: none;
+  border: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.08s ease, filter 0.1s ease;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.touch-btn:active,
+.touch-btn.active {
+  transform: scale(0.92);
+  filter: brightness(1.28);
+}
+
+.touch-icon {
+  pointer-events: none;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.8));
+}
+
+.touch-btn-label {
+  font-size: 10px;
+  letter-spacing: 0.5px;
+  margin-top: 1px;
+  pointer-events: none;
+}
+
+/* FIRE button (Primary) */
+.touch-btn-fire {
+  right: 8px;
+  bottom: 8px;
+  width: 76px;
+  height: 76px;
+  background: radial-gradient(circle at 35% 35%, #ff4b4b 0%, #d32f2f 70%, #8b0000 100%);
+  border: 2.5px solid rgba(255, 255, 255, 0.95);
+  box-shadow: 0 0 20px rgba(255, 50, 50, 0.7), 0 4px 12px rgba(0, 0, 0, 0.6);
+}
+.touch-btn-fire.active {
+  box-shadow: 0 0 28px rgba(255, 100, 100, 0.95), 0 2px 6px rgba(0, 0, 0, 0.7);
+  background: radial-gradient(circle at 35% 35%, #ff6b6b 0%, #e53935 70%, #b71c1c 100%);
+}
+.touch-btn-fire .touch-btn-label {
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 1px;
+}
+
+/* JUMP button */
+.touch-btn-jump {
+  right: 98px;
+  bottom: 20px;
+  width: 58px;
+  height: 58px;
+  background: radial-gradient(circle at 35% 35%, #00e5ff 0%, #0288d1 75%, #01579b 100%);
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  box-shadow: 0 0 16px rgba(0, 229, 255, 0.55), 0 3px 8px rgba(0, 0, 0, 0.5);
+}
+.touch-btn-jump.active {
+  box-shadow: 0 0 24px rgba(0, 229, 255, 0.95);
+  background: radial-gradient(circle at 35% 35%, #33ecff 0%, #039be5 75%, #0277bd 100%);
+}
+
+/* RELOAD button */
+.touch-btn-reload {
+  right: 18px;
+  bottom: 96px;
+  width: 54px;
+  height: 54px;
+  background: radial-gradient(circle at 35% 35%, #ffb300 0%, #f57c00 75%, #b75100 100%);
+  border: 2px solid rgba(255, 255, 255, 0.85);
+  box-shadow: 0 0 14px rgba(255, 179, 0, 0.55), 0 3px 8px rgba(0, 0, 0, 0.5);
+}
+.touch-btn-reload.active {
+  box-shadow: 0 0 22px rgba(255, 179, 0, 0.95);
+  background: radial-gradient(circle at 35% 35%, #ffca28 0%, #fb8c00 75%, #e65100 100%);
+}
+
+/* AIM / ADS Zoom button */
+.touch-btn-zoom {
+  right: 94px;
+  bottom: 92px;
+  width: 52px;
+  height: 52px;
+  background: radial-gradient(circle at 35% 35%, #2a3b5c 0%, #0d1e3a 80%, #030d1e 100%);
+  border: 2px solid rgba(0, 229, 255, 0.7);
+  box-shadow: 0 0 12px rgba(0, 229, 255, 0.35), 0 3px 8px rgba(0, 0, 0, 0.5);
+}
+.touch-btn-zoom.active {
+  background: radial-gradient(circle at 35% 35%, #00e5ff 0%, #0099cc 85%);
+  color: #010d25;
+  border-color: #ffffff;
+  box-shadow: 0 0 22px rgba(0, 229, 255, 0.95);
+}
+.touch-btn-zoom.active .touch-icon {
+  stroke: #010d25;
+}
+.touch-btn-zoom.active .touch-btn-label {
+  color: #010d25;
+}
+
+/* Controls Hint Display Rules */
+body.controls-on-screen #hud-controls-hint {
+  font-size: 11px;
+  bottom: 8px;
+}
+
+/* ==========================================================================
+   MOBILE LANDSCAPE RESPONSIVE OPTIMIZATIONS
+   ========================================================================== */
+@media screen and (max-height: 540px) and (orientation: landscape) {
+  #launcher-frame {
+    padding: 12px 24px 14px;
+    width: min(520px, 92vw);
+    max-height: 96vh;
+    max-height: 96dvh;
+  }
+  .launcher-label {
+    font-size: 16px;
+    margin: 0 0 4px 0 !important;
+  }
+  .input-wrap input {
+    font-size: 15px;
+    padding: 4px 8px;
+  }
+  #color-indicator {
+    font-size: 11px;
+    margin-top: 2px;
+    min-height: 14px;
+  }
+  #ts-hint {
+    font-size: 11px;
+    margin-top: 2px;
+  }
+  #bridge-options-toggle {
+    margin-top: 6px;
+    font-size: 11px;
+  }
+  #connect-error {
+    margin-top: 4px;
+    font-size: 11px;
+    min-height: 14px;
+  }
+  .button-row {
+    margin-top: 10px;
+  }
+  #btn-play, #btn-close {
+    font-size: 16px;
+    padding: 6px 28px;
+  }
+
+  /* HUD scaling in landscape */
+  #hud-top {
+    top: max(8px, env(safe-area-inset-top));
+    width: min(340px, 50vw);
+  }
+  #healthbar-container {
+    height: 16px;
+  }
+  #health-text {
+    font-size: 14px;
+    margin-top: 2px;
+  }
+  #ammo-text {
+    font-size: 14px;
+    margin-top: 2px;
+  }
+  #reload-text {
+    font-size: 13px;
+    margin-top: 2px;
+  }
+
+  /* Top Left Controls */
+  #top-left-controls {
+    top: max(8px, env(safe-area-inset-top));
+    left: max(12px, env(safe-area-inset-left));
+    gap: 6px;
+  }
+  #top-left-controls button {
+    padding: 4px 8px;
+    font-size: 11px;
+    white-space: nowrap;
+  }
+
+  /* Top Right Controls */
+  #top-bar-controls {
+    top: max(8px, env(safe-area-inset-top));
+    right: max(12px, env(safe-area-inset-right));
+    gap: 6px;
+  }
+  #top-bar-controls button {
+    padding: 4px 8px;
+    font-size: 11px;
+    white-space: nowrap;
+  }
+
+  /* Death Screen in landscape */
+  #death-title {
+    font-size: clamp(34px, 8vh, 60px);
+    margin: 0 0 8px 0;
+  }
+  #death-subtitle {
+    font-size: clamp(12px, 3vh, 16px);
+    margin: 0 0 16px 0;
+  }
+  #respawn-button {
+    font-size: 17px;
+    padding: 9px 36px;
+  }
+  #timer-text {
+    font-size: 14px;
+    margin-top: 10px;
+  }
+}

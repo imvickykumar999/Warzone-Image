@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#000000">
+  <title>Ursina TCP Deathmatch</title>
+  <link rel="icon" type="image/png" href="assets/logo.png">
+  <link rel="apple-touch-icon" href="assets/logo.png">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Landscape Orientation Warning Overlay for Mobile -->
+  <div id="portrait-warning" class="portrait-overlay" hidden>
+    <div class="rotate-phone-anim">
+      <div class="phone-frame">
+        <div class="phone-screen-inner"></div>
+      </div>
+      <div class="rotate-arrow">↻</div>
+    </div>
+    <h2 class="rotate-title">Please Rotate Your Device</h2>
+    <p class="rotate-desc">This 3D deathmatch game requires <strong>Landscape Mode</strong> for full touch controls.</p>
+  </div>
+  <!-- Background Lobby Music (Auto-plays or unlocks on first interaction) -->
+  <audio id="lobby-music" src="assets/music.mp3" loop preload="auto"></audio>
+
+  <!-- Sound Effect for Gunfire -->
+  <audio id="bullet-audio" src="assets/bullet.mp3" preload="auto"></audio>
+
+  <!-- SCREEN 1: Launcher / Connect Modal (Exact Replica of Tkinter get_user_input) -->
+  <section id="connect-screen">
+    <div id="launcher-frame">
+      <h2 class="launcher-label">Enter your username:</h2>
+      <div class="input-wrap">
+        <input id="username" list="color-options" autocomplete="off" spellcheck="false" maxlength="20">
+        <datalist id="color-options">
+          <option value="Blue">
+          <option value="Green">
+          <option value="Orange">
+          <option value="Purple">
+          <option value="Yellow">
+          <option value="Red">
+          <option value="Turquoise">
+          <option value="Pink">
+          <option value="Cyan">
+          <option value="Lime">
+          <option value="Crimson">
+          <option value="Teal">
+          <option value="Navy">
+          <option value="Gold">
+          <option value="Magenta">
+          <option value="Aqua">
+          <option value="Violet">
+          <option value="White">
+          <option value="Gray">
+          <option value="Brown">
+          <option value="Black">
+        </datalist>
+      </div>
+      <div id="color-indicator">● Player Color: Blue</div>
+
+      <h2 class="launcher-label" style="margin-top: 18px;">Enter server address:</h2>
+      <div class="input-wrap">
+        <input id="server" list="server-options" autocomplete="off" spellcheck="false">
+        <datalist id="server-options">
+          <option value="game.24x7stream.shop">Public Default (game.24x7stream.shop)</option>
+          <option value="100.121.132.98">Tailscale IP (100.121.132.98)</option>
+          <option value="192.168.1.2">Local LAN IP (192.168.1.2)</option>
+          <option value="127.0.0.1">Localhost (127.0.0.1)</option>
+        </datalist>
+      </div>
+      <div id="ts-hint">Tailscale IP: 100.121.132.98</div>
+
+      <h2 class="launcher-label" style="margin-top: 14px;">Enter port number:</h2>
+      <div class="input-wrap">
+        <input id="port" type="number" value="8888" min="1" max="65535">
+      </div>
+
+      <!-- Advanced / Bridge options (Auto-configured by default) -->
+      <details id="bridge-options-toggle">
+        <summary>Advanced Bridge Options</summary>
+        <div style="margin-top: 8px;">
+          <label style="font-size: 13px; color: lightblue;">WebSocket Bridge:</label>
+          <input id="bridge" style="font-size: 14px; padding: 6px 10px; width: 100%; margin-top: 4px;" value="ws://localhost:8765">
+        </div>
+      </details>
+
+      <div id="connect-error" role="alert"></div>
+
+      <!-- Action Buttons matching Tkinter layout -->
+      <div class="button-row">
+        <button id="btn-close" type="button">Close</button>
+        <button id="btn-play" type="button">Play</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- SCREEN 2: In-Game 3D Playable Screen -->
+  <section id="game-screen" hidden>
+    <canvas id="game-canvas"></canvas>
+
+    <!-- Center Reticle / Crosshair (Ursina color rgba(255, 0, 0, 122)) -->
+    <div id="crosshair"></div>
+
+    <!-- In-Game Ursina HUD (Top Center) -->
+    <div id="hud-top">
+      <div id="healthbar-container">
+        <div id="healthbar-fill"></div>
+      </div>
+      <div id="health-text">250 / 250 HP</div>
+      <div id="ammo-text">15 / 15</div>
+      <div id="reload-text" hidden>Reloading... 2.0s</div>
+    </div>
+
+    <!-- Quick Controls Notice -->
+    <div id="hud-controls-hint">
+      [WASD] Move &nbsp;|&nbsp; [MOUSE] Aim &nbsp;|&nbsp; [RMB / C] Zoom &nbsp;|&nbsp; [LMB] Fire &nbsp;|&nbsp; [SPACE] Jump &nbsp;|&nbsp; [R / E] Reload &nbsp;|&nbsp; [V] View &nbsp;|&nbsp; [T] Controls &nbsp;|&nbsp; [ESC] Free Mouse
+    </div>
+
+    <!-- Top Left Controls: Controls Mode, View Mode -->
+    <div id="top-left-controls">
+      <button id="controls-toggle-button" type="button" title="Toggle Controls Mode (On-Screen Controller / Mouse & Keyboard) [T]">🎮 On-Screen [T]</button>
+      <button id="view-toggle-button" type="button" title="Toggle View (1st/3rd Person) [V]">👤 1st View [V]</button>
+    </div>
+
+    <!-- Top Right Controls: Audio, Fullscreen -->
+    <div id="top-bar-controls">
+      <button id="audio-toggle-button" type="button" title="Toggle Music">🎵</button>
+      <button id="fullscreen-button" type="button" title="Toggle Fullscreen">⛶ Fullscreen</button>
+    </div>
+
+    <!-- In-Game Death Screen Overlay (Exact Replica of Ursina Player.death) -->
+    <div id="death-screen" hidden>
+      <div id="death-content">
+        <h1 id="death-title">YOU DIED</h1>
+        <p id="death-subtitle">Press [R], [SPACE] or tap RESPAWN to Play &nbsp;|&nbsp; [ESC] to Exit</p>
+        <button id="respawn-button" type="button">RESPAWN</button>
+        <div id="timer-text">Auto-respawn in 5s...</div>
+      </div>
+    </div>
+
+    <!-- Mobile Touch Controls Overlay (Dynamic Virtual Joystick, Look Trackpad, Action Buttons) -->
+    <div id="touch-controls" class="touch-controls" hidden>
+      <!-- Left Side: Dynamic Virtual Joystick Area -->
+      <div id="joystick-zone" class="joystick-zone">
+        <div id="joystick-base">
+          <div class="joystick-ring"></div>
+          <div id="joystick-knob"></div>
+        </div>
+      </div>
+
+      <!-- Right Side: Look / Aim Trackpad -->
+      <div id="touch-look-zone" class="touch-look-zone"></div>
+
+      <!-- Right Action Buttons Cluster -->
+      <div id="touch-action-cluster" class="touch-action-cluster">
+        <!-- Aim / ADS Zoom Button -->
+        <button id="btn-touch-zoom" class="touch-btn touch-btn-zoom" type="button" aria-label="Toggle ADS Zoom Aim">
+          <svg class="touch-icon" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="9"/>
+            <line x1="12" y1="3" x2="12" y2="7"/>
+            <line x1="12" y1="17" x2="12" y2="21"/>
+            <line x1="3" y1="12" x2="7" y2="12"/>
+            <line x1="17" y1="12" x2="21" y2="12"/>
+            <circle cx="12" cy="12" r="2.2" fill="currentColor"/>
+          </svg>
+          <span class="touch-btn-label">AIM</span>
+        </button>
+
+        <!-- Reload Button -->
+        <button id="btn-touch-reload" class="touch-btn touch-btn-reload" type="button" aria-label="Reload Weapon">
+          <svg class="touch-icon" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round">
+            <path d="M21.5 2v6h-6M2.5 22v-6h6M2 12a10 10 0 0 1 17.07-7.07L21.5 8M22 12a10 10 0 0 1-17.07 7.07L2.5 16"/>
+          </svg>
+          <span class="touch-btn-label">RELOAD</span>
+        </button>
+
+        <!-- Jump Button -->
+        <button id="btn-touch-jump" class="touch-btn touch-btn-jump" type="button" aria-label="Jump">
+          <svg class="touch-icon" viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 19V5M5 12l7-7 7 7"/>
+          </svg>
+          <span class="touch-btn-label">JUMP</span>
+        </button>
+
+        <!-- Fire Button -->
+        <button id="btn-touch-fire" class="touch-btn touch-btn-fire" type="button" aria-label="Fire Bullet">
+          <svg class="touch-icon fire-icon" viewBox="0 0 24 24" width="28" height="28" fill="currentColor">
+            <circle cx="12" cy="12" r="4"/>
+            <path d="M12 1v5M12 18v5M1 12h5M18 12h5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+          </svg>
+          <span class="touch-btn-label">FIRE</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Game Logic via ES Module -->
+  <script type="module" src="game.js"></script>
+</body>
+</html>
