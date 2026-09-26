@@ -1,2 +1,5 @@
 websockets>=12.0
 art
+ursina
+psutil
+pygame
