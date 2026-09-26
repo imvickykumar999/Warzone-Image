@@ -1,0 +1,16 @@
+.git
+.venv
+__pycache__
+*.pyc
+*.pyo
+.cursor
+agent-transcripts
+README.md
+client.ico
+client.py
+bullet.py
+enemy.py
+floor.py
+map.py
+network.py
+player.py

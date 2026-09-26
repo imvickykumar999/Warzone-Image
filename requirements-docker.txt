@@ -1,0 +1,4 @@
+websockets>=12.0
+art
+psutil
+colorama
